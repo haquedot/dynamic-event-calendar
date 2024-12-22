@@ -1,17 +1,15 @@
-import './App.css'
-import Calendar from './components/Calendar'
+// App.js
+import './App.css';
+import Calendar from './components/Calendar';
 
 function App() {
-
   return (
     <>
-      <div className="min-h-screen bg-gray-100 p-4">
-        <h1 className="text-3xl font-bold text-center mb-6">Dynamic Event Calendar</h1>
-        <Calendar />
+      <div className="min-h-screen max-w-7xl mx-auto">
+          <Calendar />
       </div>
-
     </>
-  )
+  );
 }
 
-export default App
+export default App;
