@@ -17,6 +17,7 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     localStorage.setItem("calendarEvents", JSON.stringify(events));
@@ -37,6 +38,7 @@ const Calendar = () => {
   };
 
   const handleEventClick = (event) => {
+    setSelectedEvent(event);
     setShowEventModal(true);
   };
 
@@ -56,19 +58,27 @@ const Calendar = () => {
     }));
   };
 
+  const editEvent = (index, updatedEvent) => {
+    const updatedEvents = [...(events[selectedDate] || [])];
+    updatedEvents[index] = updatedEvent;
+    setEvents((prev) => ({
+      ...prev,
+      [selectedDate]: updatedEvents,
+    }));
+  };
+
   const days = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => i + 1), [daysInMonth]);
 
   return (
     <>
       <div className="block md:flex gap-3">
         <div className="md:w-3/4 mx-auto mb-8 p-4">
-          {/* Navigation */}
           <div className="flex justify-between items-center mb-4">
             <button
               className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
               onClick={prevMonth}
             >
-              <FaArrowLeft /> Previous
+              <FaArrowLeft /> <span className="hidden md:block">Previous</span>
             </button>
             <h2 className="text-md md:text-xl font-bold flex items-center gap-2">
               <FaCalendarAlt className="text-indigo-500" /> {currentDate.format("MMMM YYYY")}
@@ -77,11 +87,10 @@ const Calendar = () => {
               className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-600"
               onClick={nextMonth}
             >
-              Next <FaArrowRight />
+              <span className="hidden md:block">Next</span> <FaArrowRight />
             </button>
           </div>
 
-          {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2 text-center">
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, idx) => (
               <div key={idx} className="font-semibold text-gray-700">
@@ -100,17 +109,17 @@ const Calendar = () => {
               return (
                 <div
                   key={day}
-                  className={`flex flex-col justify-center h-12 md:h-20 border p-1 md:p-2 hover:bg-indigo-100 cursor-pointer ${dayjs(date).isSame(dayjs(), "day")
-                    ? "bg-indigo-500 hover:bg-indigo-600 text-white"
-                    : ""
-                    }`}
+                  className={`flex flex-col justify-center h-12 md:h-20 border p-1 md:p-2 hover:bg-indigo-100 cursor-pointer ${
+                    dayjs(date).isSame(dayjs(), "day") ? "bg-indigo-500 hover:bg-indigo-600 text-white" : ""
+                  }`}
                   onClick={() => handleDayClick(day)}
                 >
                   {day}
                   {hasEvents && (
                     <div
-                      className={`mt-1 text-[8px] md:text-xs ${dayjs(date).isSame(dayjs(), "day") ? "text-white" : "text-indigo-500"
-                        }`}
+                      className={`mt-1 text-[8px] md:text-xs ${
+                        dayjs(date).isSame(dayjs(), "day") ? "text-white" : "text-indigo-500"
+                      }`}
                     >
                       Events
                     </div>
@@ -127,12 +136,13 @@ const Calendar = () => {
               onClose={() => setShowModal(false)}
               onAddEvent={addEvent}
               onDeleteEvent={deleteEvent}
+              onEditEvent={editEvent}
+
             />
           )}
         </div>
 
-        {/* Events Section */}
-        <div className="md:w-1/4 md:min-h-screen border-t md:border-t-0 md:border-l border-indigo-200 pt-4 pl-4">
+        <div className="md:w-1/4 md:min-h-screen border-t md:border-t-0 md:border-l border-indigo-200 p-4">
           <h1 className="text-lg font-bold text-indigo-600 flex items-center gap-2">
             <FaCalendarAlt /> Events
           </h1>
@@ -144,16 +154,19 @@ const Calendar = () => {
                 <li key={date} className="bg-indigo-50 rounded p-2 my-2">
                   <h2 className="text-xs text-indigo-500 font-semibold mb-1">{date}</h2>
                   <ul>
-                    {Array.isArray(events[date]) && events[date].map((event, idx) => (
-                      <li
-                        key={idx}
-                        className="flex justify-between text-sm bg-white rounded shadow-sm p-2 my-1 cursor-pointer hover:bg-indigo-100"
-                        onClick={() => handleEventClick(event)}
-                      >
-                        <p>{event.name}</p>
-                        <p>{event.startTime} - {event.endTime}</p>
-                      </li>
-                    ))}
+                    {Array.isArray(events[date]) &&
+                      events[date].map((event, idx) => (
+                        <li
+                          key={idx}
+                          className="flex justify-between text-sm bg-white rounded shadow-sm p-2 my-1 cursor-pointer hover:bg-indigo-100"
+                          onClick={() => handleEventClick(event)}
+                        >
+                          <p>{event.name}</p>
+                          <p>
+                            {event.startTime} - {event.endTime}
+                          </p>
+                        </li>
+                      ))}
                   </ul>
                 </li>
               ))
@@ -164,7 +177,7 @@ const Calendar = () => {
 
       {showEventModal && (
         <EventDetailsModal
-          event={events[selectedDate]}
+          event={selectedEvent}
           onClose={() => setShowEventModal(false)}
         />
       )}

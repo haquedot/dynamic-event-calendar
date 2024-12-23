@@ -1,4 +1,3 @@
-// App.js
 import './App.css';
 import Calendar from './components/Calendar';
 
